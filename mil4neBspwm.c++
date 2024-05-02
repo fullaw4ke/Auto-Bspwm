@@ -29,6 +29,7 @@ int check_user_permissions() {
 int get_user() {
     cout << "\033[33m[*]\033[0m username: ";
     cin >> input_username;
+    return 0;
 }
 
 int directorio() {
@@ -87,19 +88,29 @@ int upgrade() {
     return 0;
 }
 
+
+
 void eliminarArchivos(const std::string& ruta) {
+    // Eliminar archivos individuales
     fs::remove(ruta + "/.zshrc");
     fs::remove(ruta + "/.p10k.zsh");
+
+    // Eliminar archivos en .config
     fs::remove_all(ruta + "/.config/polybar");
-    fs::remove(ruta + "/.config/bspwm");
-    fs::remove(ruta + "/.config/sxhkd");
-    fs::remove(ruta + "/.config/kitty");
+    fs::remove_all(ruta + "/.config/bspwm");
+    fs::remove_all(ruta + "/.config/sxhkd");
+    fs::remove_all(ruta + "/.config/kitty"); // Aquí se elimina recursivamente
+
+    // Eliminar archivos individuales de /root
     fs::remove("/root/.zshrc");
     fs::remove("/root/.p10k.zsh");
-    fs::remove("/root/.config/kitty");
+    fs::remove_all("/root/.config/kitty"); // Aquí se elimina recursivamente
+
+    // Eliminar archivos en powerlevel10k
     fs::remove_all(ruta + "/powerlevel10k");
     fs::remove_all("/root/powerlevel10k");
 }
+
 
 int dependencias() {
     std::cout << "\033[32m[*]\033[0m Instalando Dependencias necesarias ...\n";
@@ -201,14 +212,41 @@ int fuentes() {
 }
 
 void kitty_conf(const std::string& username)  {
-    fs::copy("kitty", "/home/" + username + "/.config", fs::copy_options::recursive);
+    std::string ccommand = "mkdir /home/" + username + "/.config/kitty";
+    system(ccommand.c_str());
+    system("mkdir /root/.config/kitty");
+    fs::copy("kitty", "/home/" + username + "/.config/kitty", fs::copy_options::recursive);
     fs::copy("kitty", "/root/.config", fs::copy_options::recursive);
     std::cout << "\033[32m[*]\033[0m Config de Kitty instalada.\n";
 }
 
+void polybar(const std::string& input_username, const std::string& directorio_instalacion) {
+    std::cout << "\033[32m[*]\033[0m Configurando polybar ...\n";
+    
+    system(("mkdir /home/" + input_username + "/.config/polybar").c_str());
+   
+    fs::copy("polybar", "/home/" + input_username + "/.config/polybar", fs::copy_options::recursive);
+
+    
+    std::string scripts_path = "/home/" + input_username + "/.config/polybar/scripts";
+    for (const auto& entry : fs::directory_iterator(scripts_path)) {
+        chmod(entry.path().c_str(), S_IRWXU);
+    }
+
+   
+    fs::create_directory("/home/" + input_username + "/.config/bin");
+    std::ofstream target_file("/home/" + input_username + "/.config/bin/target");
+    target_file.close();
+
+    chdir(directorio_instalacion.c_str());
+}
+
 int sxhkd_conf(const std::string& username) {
-    fs::copy("sxhkd", "/home/" + username + "/.config", fs::copy_options::recursive);
+    std::string command = "mkdir /home/" + username + "/.config/sxhkd";
+    system(command.c_str());
+    fs::copy("sxhkd", "/home/" + username + "/.config/sxhkd", fs::copy_options::recursive);
     std::cout << "\033[32m[*]\033[0m Config de Sxhkd instalada.\n";
+    return 0;
 }
 
 int su_plugin() {
@@ -226,7 +264,9 @@ int su_plugin() {
 }
 
 void bspwm_conf(const std::string& input_username, const std::string& directorio_instalacion) {
-    fs::copy("bspwm", "/home/" + input_username + "/.config", fs::copy_options::recursive);
+    std::string cccommand = "mkdir /home/" + input_username + "/.config/bspwm";
+    system(cccommand.c_str());
+    fs::copy("bspwm", "/home/" + input_username + "/.config/bspwm", fs::copy_options::recursive);
 
     std::string bspwmrc_path = "/home/" + input_username + "/.config/bspwm/bspwmrc";
     chmod(bspwmrc_path.c_str(), S_IRWXU);
@@ -240,6 +280,11 @@ void bspwm_conf(const std::string& input_username, const std::string& directorio
 }
 
 int rofi_conf() {
+    std::string command = "mkdir /home/" + input_username + "/.config/rofi";
+    system(command.c_str());
+    system(("mkdir /home/" + input_username + "/.config/rofi/launcher").c_str());
+    system(("mkdir /home/" + input_username + "/.config/rofi/powermenu").c_str());
+
     std::string source_dir = "rofi"; 
     std::string user_config_dir = "/home/" + input_username + "/.config";
 
@@ -312,19 +357,22 @@ int p10k_conf_root() {
 }
 
 int user_replace() {
-    system(("sed -i 's/user_replace/" + input_username + "/g' /home/" + input_username + "/.config/polybar/*").c_str());
-    system(("sed -i 's/user_replace/" + input_username + "/g' /home/" + input_username + "/.config/polybar/scripts/*").c_str());
+    system(("sed -i 's/byt3/" + input_username + "/g' /home/" + input_username + "/.config/polybar/*").c_str());
+    system(("sed -i 's/byt3/" + input_username + "/g' /home/" + input_username + "/.config/polybar/scripts/*").c_str());
 
-    system(("sed -i 's/user_replace/" + input_username + "/g' /home/" + input_username + "/.config/bspwm/*").c_str());
-    system(("sed -i 's/user_replace/" + input_username + "/g' /home/" + input_username + "/.config/bspwm/scripts/*").c_str());
+    system(("sed -i 's/byt3/" + input_username + "/g' /home/" + input_username + "/.config/bspwm/*").c_str());
+    system(("sed -i 's/byt3/" + input_username + "/g' /home/" + input_username + "/.config/bspwm/scripts/*").c_str());
 
-    system(("sed -i 's/user_replace/" + input_username + "/g' /home/" + input_username + "/.config/sxhkd/*").c_str());
+    system(("sed -i 's/byt3/" + input_username + "/g' /home/" + input_username + "/.config/sxhkd/*").c_str());
 
-    system(("sed -i 's/user_replace/" + input_username + "/g' /home/" + input_username + "/.p10k.zsh").c_str());
-    system(("sed -i 's/user_replace/" + input_username + "/g' /home/" + input_username + "/.zshrc").c_str());
+    system(("sed -i 's/byt3/" + input_username + "/g' /home/" + input_username + "/.p10k.zsh").c_str());
+    system(("sed -i 's/byt3/" + input_username + "/g' /home/" + input_username + "/.zshrc").c_str());
+    return 0;
 }
 
 void Wallpaper(const std::string& rutaOrigen, const std::string& rutaDestino) {
+    std::string command = "mkdir /home/" + input_username + "/Wallpapers";
+    system(command.c_str());
     fs::copy(rutaOrigen, rutaDestino, fs::copy_options::recursive);
 }
 
@@ -373,6 +421,8 @@ int main() {
     // Instalando config Rofi
     rofi_conf();
 
+    polybar(input_username, directorio_instalacion);
+
     // Instalando config p10k
     p10k_conf();
 
@@ -383,7 +433,7 @@ int main() {
 
     // configurar Wallpaper
     std::string rutaOrigen = "Wallpapers";
-    std::string rutaDestino = "/home/" + input_username;
+    std::string rutaDestino = "/home/" + input_username + "/Wallpapers";
     std::cout << "\033[32m[*]\033[0m Configurando wallpapers ...\n";
     Wallpaper(rutaOrigen, rutaDestino);
 
