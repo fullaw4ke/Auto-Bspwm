@@ -91,22 +91,20 @@ int upgrade() {
 
 
 void eliminarArchivos(const std::string& ruta) {
-    // Eliminar archivos individuales
+   
     fs::remove(ruta + "/.zshrc");
     fs::remove(ruta + "/.p10k.zsh");
 
-    // Eliminar archivos en .config
+    
     fs::remove_all(ruta + "/.config/polybar");
     fs::remove_all(ruta + "/.config/bspwm");
     fs::remove_all(ruta + "/.config/sxhkd");
-    fs::remove_all(ruta + "/.config/kitty"); // Aquí se elimina recursivamente
+    fs::remove_all(ruta + "/.config/kitty");
 
-    // Eliminar archivos individuales de /root
     fs::remove("/root/.zshrc");
     fs::remove("/root/.p10k.zsh");
-    fs::remove_all("/root/.config/kitty"); // Aquí se elimina recursivamente
+    fs::remove_all("/root/.config/kitty"); 
 
-    // Eliminar archivos en powerlevel10k
     fs::remove_all(ruta + "/powerlevel10k");
     fs::remove_all("/root/powerlevel10k");
 }
@@ -115,14 +113,12 @@ void eliminarArchivos(const std::string& ruta) {
 int dependencias() {
     std::cout << "\033[32m[*]\033[0m Instalando Dependencias necesarias ...\n";
 
-    // Crear un nuevo proceso hijo para ejecutar apt install
     pid_t pid = fork();
 
     if (pid == -1) {
         std::cerr << "Error al crear el proceso hijo." << std::endl;
         return -1;
-    } else if (pid == 0) { // Código para el proceso hijo
-        // Lista de argumentos para apt install
+    } else if (pid == 0) { 
         char *args[] = {
             (char*)"apt",
             (char*)"install",
@@ -140,18 +136,18 @@ int dependencias() {
             (char*)"rofi",
             (char*)"kitty",
             (char*)"zsh",
+            (char*)"net-tools",
             (char*)"-y",
             nullptr
         };
 
-        // Reemplazar la imagen del proceso hijo por apt install
+        
         execvp(args[0], args);
 
-        // Si execvp() devuelve, ha habido un error
+        
         std::cerr << "Error al ejecutar apt install." << std::endl;
         exit(EXIT_FAILURE);
-    } else { // Código para el proceso padre
-        // Esperar a que el proceso hijo termine
+    } else { 
         int status;
         waitpid(pid, &status, 0);
 
@@ -168,16 +164,13 @@ int dependencias() {
 
 int nuevas_carpetas(const std::string& input_username) {
     try {
-        // Rutas de las carpetas a crear
         std::string root_config_dir = "/root/.config";
         std::string user_config_dir = "/home/" + input_username + "/.config";
 
-        // Crear la carpeta .config en el directorio raíz
         if (!fs::create_directory(root_config_dir)) {
             throw std::runtime_error("No se pudo crear la carpeta .config en el directorio raíz.");
         }
 
-        // Crear la carpeta .config en el directorio del usuario
         if (!fs::create_directory(user_config_dir)) {
             throw std::runtime_error("No se pudo crear la carpeta .config en el directorio del usuario.");
         }
@@ -279,28 +272,6 @@ void bspwm_conf(const std::string& input_username, const std::string& directorio
     std::cout << "\033[32m[*]\033[0m Config de Bspwm instalada.\n";
 }
 
-int rofi_conf() {
-    std::string command = "mkdir /home/" + input_username + "/.config/rofi";
-    system(command.c_str());
-    system(("mkdir /home/" + input_username + "/.config/rofi/launcher").c_str());
-    system(("mkdir /home/" + input_username + "/.config/rofi/powermenu").c_str());
-
-    std::string source_dir = "rofi"; 
-    std::string user_config_dir = "/home/" + input_username + "/.config";
-
-    try {
-        fs::copy(source_dir, user_config_dir, fs::copy_options::recursive | fs::copy_options::overwrite_existing);
-
-        fs::permissions(user_config_dir + "/rofi/launcher/launcher.sh", fs::perms::owner_exec | fs::perms::group_exec | fs::perms::others_exec);
-        fs::permissions(user_config_dir + "/rofi/powermenu/powermenu.sh", fs::perms::owner_exec | fs::perms::group_exec | fs::perms::others_exec);
-
-        std::cout << "\033[32m[*]\033[0m Configuración de Rofi instalada correctamente.\n";
-    } catch (const std::exception& e) {
-        std::cerr << "\033[31m[*]\033[0m Error al configurar Rofi: " << e.what() << "\n";
-    }
-
-    return 0;
-}
 
 int p10k_conf() {
     std::string user_home_dir = "/home/" + input_username;
@@ -378,74 +349,53 @@ void Wallpaper(const std::string& rutaOrigen, const std::string& rutaDestino) {
 
 
 int main() {
-    // Verifica ejecucion con sudo   
+  
     check_user_permissions();
 
-    // Agarrra el username
     get_user();
 
-    // pwd actual
     directorio();
 
-    // Update al Sistema
     update();
 
-    // Upgrade al Sistema
     upgrade();
 
-    // Borrando configuraciones antiguas
     std::cout << "\033[32m[*]\033[0m Eliminando Config Antiguas ...\n";
     eliminarArchivos("/home/" + input_username);
 
-    // Instalando Dependecias para entorno
     dependencias();
 
-    // Creando Nuevas carpetas .config
     nuevas_carpetas(input_username);
 
-    // Instalando Fuentes
     fuentes();
 
-    // Instalando config Kitty
     kitty_conf(input_username);
  
-    // Instalando config Sxhkd
     sxhkd_conf(input_username);
 
-    // Instalando sudo Plugin
     su_plugin();
 
-    // Instalando config Bspwm
     bspwm_conf(input_username, directorio_instalacion);
-
-    // Instalando config Rofi
-    rofi_conf();
 
     polybar(input_username, directorio_instalacion);
 
-    // Instalando config p10k
     p10k_conf();
 
-    // Instalando config p10k root
     p10k_conf_root();
 
     user_replace();
 
-    // configurar Wallpaper
     std::string rutaOrigen = "Wallpapers";
     std::string rutaDestino = "/home/" + input_username + "/Wallpapers";
     std::cout << "\033[32m[*]\033[0m Configurando wallpapers ...\n";
     Wallpaper(rutaOrigen, rutaDestino);
 
-    // Crear un enlace simbólico entre la .zshrc del usuario elegido y la .zshrc de root
     system(("ln -s -f /home/" + input_username + "/.zshrc /root/.zshrc").c_str());
     std::cout << "\033[32m[*]\033[0m Creando link simbólico en la .zshrc ...\n";
 
-    // Crear un enlace simbólico entre el .p10k.zsh del usuario elegido y el de root
     system(("ln -s -f /home/" + input_username + "/.p10k.zsh /root/.p10k.zsh").c_str());
     std::cout << "\033[32m[*]\033[0m Creando link simbólico en el archivo .p10k.zsh ...\n";
 
-    // Asignar el propietario correcto a los archivos de configuración del usuario
     system(("chown -R " + input_username + ":" + input_username + " /home/" + input_username).c_str());
 
     return 0;
