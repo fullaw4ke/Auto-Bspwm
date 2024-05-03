@@ -21,11 +21,7 @@ super + Return
 
 # rofi launcher
 super + shift + d
-	/home/byt3/.config/rofi/launcher/launcher.sh
-
-# rofi powermenu
-super + shift + p
-	/home/byt3/.config/rofi/powermenu/powermenu.sh
+	rofi -show drun
 
 # make sxhkd reload its configuration files:
 super + Escape
