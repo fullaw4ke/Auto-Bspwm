@@ -1,17 +1,7 @@
 ## <span style="color: #7E3BF7FF">Bswpm Install</span>
 
----
-
-<style>
-  .imagen-sombra {
-    width: 200px; /* Ancho deseado */
-    height: auto; /* Altura automática para mantener la proporción */
-    border-radius: 10px; /* Ajusta el radio de borde según lo desees */
-    box-shadow: 0px 10px 10px rgba(0, 0, 0, 0.5); /* Sombra en la parte inferior */   
-  }
-</style>
               
-<img class="imagen-sombra" src="/img/bspwm.webp">
+<img src="/img/bspwm.webp" width="300">
 
 This script installs my entire personal work environment automatically.
 
