@@ -1,11 +1,24 @@
-## <span style="color: #7E3BF7FF">Bswpm Install</span>
-
-              
+# <span style="color: #7E3BF7FF">Bswpm Auto Install - Kali Linux</span>
+            
 <img src="/img/bspwm.webp" width="300">
 
 This script installs my entire personal work environment automatically.
 
 with the aim of not having to do all the configuration manually every time I create a virtual machine.
+# Instalation
+## Compile
+
+```bash
+g++ start.c++ -o start
+```
+```bash
+chmod +x start
+```
+
+```bash
+sudo ./start
+```
+
 
 In this environment we use:
 
