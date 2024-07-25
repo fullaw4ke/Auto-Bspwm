@@ -8,7 +8,7 @@ with the aim of not having to do all the configuration manually every time I cre
 # Instalation
 
 ```bash
-https://github.com/mil4ne/Auto-Bspwm.git
+git clone https://github.com/mil4ne/Auto-Bspwm.git
 ```
 
 ```bash
