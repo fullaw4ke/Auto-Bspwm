@@ -6,7 +6,14 @@ This script installs my entire personal work environment automatically.
 
 with the aim of not having to do all the configuration manually every time I create a virtual machine.
 # Instalation
-## Compile
+
+```bash
+https://github.com/mil4ne/Auto-Bspwm.git
+```
+
+```bash
+cd Auto-Bspwm
+```
 
 ```bash
 g++ start.c++ -o start
